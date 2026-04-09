@@ -9,7 +9,7 @@ const DEFAULT_OPTIONS = {
   maxDescriptorDistance: 0.5,
 };
 
-export const useFaceRecognition = (options = {}) => {
+export const useFaceRecognition = () => {
   const [isModelLoading, setIsModelLoading] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [error, setError] = useState(null);
@@ -58,7 +58,13 @@ export const useFaceRecognition = (options = {}) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        await videoRef.current.play();
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          // AbortError means a new load interrupted play — not a real error, video will resume
+          if (playErr.name === 'AbortError') return;
+          throw playErr;
+        }
         setIsVideoReady(true);
       }
     } catch (err) {
