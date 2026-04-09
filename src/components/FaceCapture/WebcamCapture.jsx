@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFaceRecognition } from '../../hooks/useFaceRecognition';
 import { FaceCanvas } from './FaceCanvas';
-import { Button } from '../common/Button';
 import { Spinner } from '../common/Spinner';
+
+const AUTO_CAPTURE_DELAY = 1500; // ms of stable face detection before auto-capture
 
 export const WebcamCapture = ({
   onCapture,
@@ -19,63 +20,89 @@ export const WebcamCapture = ({
     faceDetected,
     startVideo,
     stopVideo,
-    startDetection,
     stopDetection,
     detectFace,
   } = useFaceRecognition();
 
   const [captured, setCaptured] = useState(false);
   const [capturing, setCapturing] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const stableTimer = useRef(null);
+  const countdownInterval = useRef(null);
 
   useEffect(() => {
     startVideo();
-
     return () => {
       stopVideo();
       stopDetection();
+      clearTimeout(stableTimer.current);
+      clearInterval(countdownInterval.current);
     };
   }, [startVideo, stopVideo, stopDetection]);
 
+  // Continuously poll face detection so faceDetected state stays current
   useEffect(() => {
-    if (isVideoReady && continuous) {
-      startDetection((embedding) => {
-        if (onCapture && !capturing) {
-          onCapture(Array.from(embedding));
+    if (!isVideoReady || capturing || captured) return;
+    const poll = setInterval(() => detectFace(), 300);
+    return () => clearInterval(poll);
+  }, [isVideoReady, capturing, captured, detectFace]);
+
+  // Auto-capture logic: start timer when face detected, cancel when lost
+  useEffect(() => {
+    if (captured || capturing || continuous) return;
+
+    if (faceDetected) {
+      let remaining = AUTO_CAPTURE_DELAY;
+      setCountdown(remaining);
+
+      countdownInterval.current = setInterval(() => {
+        remaining -= 100;
+        setCountdown(remaining);
+      }, 100);
+
+      stableTimer.current = setTimeout(async () => {
+        clearInterval(countdownInterval.current);
+        setCountdown(null);
+        setCapturing(true);
+
+        const embedding = await detectFace();
+        if (embedding) {
+          setCaptured(true);
+          onCapture?.(Array.from(embedding));
+          setTimeout(() => setCaptured(false), 2000);
+        } else {
+          onError?.('Could not capture face. Please try again.');
         }
-      }, 200);
+        setCapturing(false);
+      }, AUTO_CAPTURE_DELAY);
+    } else {
+      clearTimeout(stableTimer.current);
+      clearInterval(countdownInterval.current);
+      setCountdown(null);
     }
 
     return () => {
-      stopDetection();
+      clearTimeout(stableTimer.current);
+      clearInterval(countdownInterval.current);
     };
-  }, [isVideoReady, continuous, startDetection, stopDetection, onCapture, capturing]);
+  }, [faceDetected, captured, capturing, continuous, detectFace, onCapture, onError]);
 
-  const handleCapture = async () => {
-    if (capturing) return;
+  // Continuous mode — keep streaming embeddings
+  useEffect(() => {
+    if (!isVideoReady || !continuous) return;
 
-    setCapturing(true);
-    stopDetection();
+    const interval = setInterval(async () => {
+      if (capturing) return;
+      const embedding = await detectFace();
+      if (embedding) onCapture?.(Array.from(embedding));
+    }, 200);
 
-    const embedding = await detectFace();
+    return () => clearInterval(interval);
+  }, [isVideoReady, continuous, capturing, detectFace, onCapture]);
 
-    if (embedding) {
-      setCaptured(true);
-      onCapture?.(Array.from(embedding));
-      setTimeout(() => setCaptured(false), 2000);
-    } else {
-      onError?.('No face detected. Please position your face in the camera.');
-    }
-
-    setCapturing(false);
-
-    if (continuous) {
-      startDetection((emb) => {
-        if (onCapture && !capturing) {
-          onCapture(Array.from(emb));
-        }
-      }, 200);
-    }
-  };
+  const progressPercent = countdown !== null
+    ? Math.round(((AUTO_CAPTURE_DELAY - countdown) / AUTO_CAPTURE_DELAY) * 100)
+    : 0;
 
   if (isModelLoading) {
     return (
@@ -112,21 +139,37 @@ export const WebcamCapture = ({
         </div>
       )}
 
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-        <Button
-          variant={captured ? 'success' : 'primary'}
-          onClick={handleCapture}
-          disabled={!isVideoReady || !faceDetected || capturing}
-          loading={capturing}
-        >
-          {captured ? 'Captured!' : captureText}
-        </Button>
-      </div>
+      {/* Status overlay */}
+      {isVideoReady && !error && (
+        <div className="absolute top-4 left-0 right-0 flex justify-center">
+          {capturing ? (
+            <span className="bg-blue-600 text-white text-sm px-4 py-2 rounded-full">
+              Capturing...
+            </span>
+          ) : captured ? (
+            <span className="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full">
+              Captured!
+            </span>
+          ) : faceDetected ? (
+            <span className="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full">
+              Face detected — hold still...
+            </span>
+          ) : (
+            <span className="bg-amber-500 text-white text-sm px-4 py-2 rounded-full">
+              Position your face in the frame
+            </span>
+          )}
+        </div>
+      )}
 
-      {!faceDetected && isVideoReady && !error && (
-        <p className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-sm px-4 py-2 rounded-full">
-          Position your face in the frame
-        </p>
+      {/* Auto-capture progress bar */}
+      {countdown !== null && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-700">
+          <div
+            className="h-full bg-emerald-400 transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       )}
     </div>
   );

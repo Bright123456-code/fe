@@ -1,18 +1,21 @@
 import api from './api';
 
 export const attendanceService = {
-  checkIn: async (faceEmbedding, location) => {
+  checkIn: async (faceEmbedding, location, date) => {
     const { data } = await api.post('/attendance/check-in', {
       faceEmbedding,
-      location,
+      ...(location && { location }),
+      ...(date && { date }),
     });
     return data;
   },
 
-  checkOut: async (faceEmbedding, location) => {
+  checkOut: async (faceEmbedding, location, date) => {
     const { data } = await api.post('/attendance/check-out', {
       faceEmbedding,
-      location });
+      ...(location && { location }),
+      ...(date && { date }),
+    });
     return data;
   },
 

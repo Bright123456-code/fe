@@ -229,32 +229,16 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        label="Name"
-        value={formData.name}
-        onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-        required
-      />
-      <Input
-        label="Email"
-        type="email"
-        value={formData.email}
-        onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-        required
-      />
+      <Input label="Name" value={formData.name} onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))} required />
+      <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} required />
       {!user && (
-        <Input
-          label="Password"
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
-          required={!user}
-        />
+        <Input label="Password" type="password" value={formData.password} onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))} required />
       )}
       <div>
-        <label className="label">Role</label>
+        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#0A0A0A' }}>Role</label>
         <select
-          className="input"
+          className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all"
+          style={{ backgroundColor: '#F5F5F0', borderColor: '#E8E8E3', color: '#0A0A0A' }}
           value={formData.role}
           onChange={(e) => setFormData((p) => ({ ...p, role: e.target.value }))}
         >
@@ -262,18 +246,35 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
           <option value="admin">Admin</option>
         </select>
       </div>
-      <Input
-        label="Department"
-        value={formData.department}
-        onChange={(e) => setFormData((p) => ({ ...p, department: e.target.value }))}
-      />
-      <div className="flex gap-3 pt-4">
-        <Button type="button" variant="secondary" onClick={onCancel}>
+      <Input label="Department" value={formData.department} onChange={(e) => setFormData((p) => ({ ...p, department: e.target.value }))} />
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          style={{ backgroundColor: '#F5F5F0', color: '#0A0A0A', border: '1px solid #E8E8E3' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#E8E8E3'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = '#F5F5F0'}
+        >
           Cancel
-        </Button>
-        <Button type="submit" loading={loading} className="flex-1">
-          {user ? 'Update' : 'Create'}
-        </Button>
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+          style={{ backgroundColor: '#FFCD00', color: '#0A0A0A' }}
+          onMouseEnter={e => { if (!loading) e.currentTarget.style.backgroundColor = '#E6B800'; }}
+          onMouseLeave={e => { if (!loading) e.currentTarget.style.backgroundColor = '#FFCD00'; }}
+        >
+          {loading && (
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          )}
+          {user ? 'Update User' : 'Create User'}
+        </button>
       </div>
     </form>
   );

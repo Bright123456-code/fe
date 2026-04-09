@@ -7,25 +7,27 @@ export const Button = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed tracking-wide';
 
   const variants = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-    secondary: 'bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400',
-    success: 'bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-400',
-    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-400',
-    ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 focus:ring-slate-400',
+    primary: 'bg-swu-black text-swu-gold hover:bg-neutral-800 focus:ring-2 focus:ring-swu-gold focus:ring-offset-1',
+    gold: 'bg-swu-gold text-swu-black hover:bg-swu-gold-dark focus:ring-2 focus:ring-swu-gold focus:ring-offset-1 font-semibold',
+    secondary: 'bg-swu-gray text-swu-black hover:bg-swu-gray-mid focus:ring-2 focus:ring-swu-gray-mid border border-swu-gray-mid',
+    success: 'bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-400',
+    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-400',
+    ghost: 'bg-transparent text-swu-muted hover:bg-swu-gray hover:text-swu-black focus:ring-2 focus:ring-swu-gray-mid',
+    outline: 'bg-transparent border border-swu-black text-swu-black hover:bg-swu-black hover:text-swu-gold focus:ring-2 focus:ring-swu-black',
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2.5 text-sm',
     lg: 'px-6 py-3 text-base',
   };
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

@@ -62,8 +62,30 @@ export const useFaceRecognition = (options = {}) => {
         setIsVideoReady(true);
       }
     } catch (err) {
-      setError('Camera access denied. Please allow camera permissions.');
-      console.error('Video start error:', err);
+      console.error('Video start error:', err.name, err.message);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setError('Camera permission denied. Please allow camera access in your browser settings.');
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setError('No camera found. Please connect a camera and try again.');
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setError('Camera is in use by another app. Please close it and try again.');
+      } else if (err.name === 'OverconstrainedError') {
+        // Retry with relaxed constraints
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            streamRef.current = stream;
+            await videoRef.current.play();
+            setIsVideoReady(true);
+          }
+          return;
+        } catch (retryErr) {
+          setError('Camera could not start. Please try again.');
+        }
+      } else {
+        setError(`Camera error: ${err.message || err.name}`);
+      }
     }
   }, []);
 

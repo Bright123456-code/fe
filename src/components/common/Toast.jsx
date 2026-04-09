@@ -4,37 +4,46 @@ import { XMarkIcon, CheckCircleIcon, ExclamationCircleIcon, InformationCircleIco
 export const Toast = () => {
   const { toasts, removeToast } = useToast();
 
-  const icons = {
-    success: <CheckCircleIcon className="h-5 w-5 text-emerald-500" />,
-    error: <ExclamationCircleIcon className="h-5 w-5 text-red-500" />,
-    warning: <InformationCircleIcon className="h-5 w-5 text-amber-500" />,
-    info: <InformationCircleIcon className="h-5 w-5 text-blue-500" />,
-  };
-
-  const bgColors = {
-    success: 'bg-emerald-50 border-emerald-200',
-    error: 'bg-red-50 border-red-200',
-    warning: 'bg-amber-50 border-amber-200',
-    info: 'bg-blue-50 border-blue-200',
+  const config = {
+    success: {
+      icon: <CheckCircleIcon className="h-4 w-4 flex-shrink-0" style={{ color: '#16A34A' }} />,
+      style: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0', color: '#15803D' },
+    },
+    error: {
+      icon: <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0" style={{ color: '#E11D48' }} />,
+      style: { backgroundColor: '#FFF1F2', borderColor: '#FECDD3', color: '#BE123C' },
+    },
+    warning: {
+      icon: <InformationCircleIcon className="h-4 w-4 flex-shrink-0" style={{ color: '#D97706' }} />,
+      style: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A', color: '#92400E' },
+    },
+    info: {
+      icon: <InformationCircleIcon className="h-4 w-4 flex-shrink-0" style={{ color: '#FFCD00' }} />,
+      style: { backgroundColor: '#FFFDF0', borderColor: '#FFCD00', color: '#0A0A0A' },
+    },
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg ${bgColors[toast.type]} animate-slide-in`}
-        >
-          {icons[toast.type]}
-          <p className="flex-1 text-sm text-slate-700">{toast.message}</p>
-          <button
-            onClick={() => removeToast(toast.id)}
-            className="text-slate-400 hover:text-slate-600"
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
+      {toasts.map((toast) => {
+        const { icon, style } = config[toast.type] || config.info;
+        return (
+          <div
+            key={toast.id}
+            className="flex items-start gap-3 px-4 py-3 rounded-xl border shadow-md text-sm font-medium"
+            style={style}
           >
-            <XMarkIcon className="h-4 w-4" />
-          </button>
-        </div>
-      ))}
+            {icon}
+            <p className="flex-1 leading-snug">{toast.message}</p>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+            >
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 };

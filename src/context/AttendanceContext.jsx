@@ -31,11 +31,11 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, []);
 
-  const checkIn = async (faceEmbedding, location) => {
+  const checkIn = async (faceEmbedding, location, date) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await attendanceService.checkIn(faceEmbedding, location);
+      const response = await attendanceService.checkIn(faceEmbedding, location, date);
       await fetchToday();
       return response;
     } catch (err) {
@@ -47,11 +47,11 @@ export const AttendanceProvider = ({ children }) => {
     }
   };
 
-  const checkOut = async (faceEmbedding, location) => {
+  const checkOut = async (faceEmbedding, location, date) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await attendanceService.checkOut(faceEmbedding, location);
+      const response = await attendanceService.checkOut(faceEmbedding, location, date);
       await fetchToday();
       return response;
     } catch (err) {
